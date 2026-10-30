@@ -67,22 +67,28 @@ public class ReaderService : IReaderService
     /// <returns></returns>
     public async Task<IEnumerable<ScanOutput>> ParseScans(IEnumerable<string> RawScans)
     {
-        List<Task<ScanOutput?>> ParseTasks = new List<Task<ScanOutput?>>();
+        // 20260918: Add the limit of threads count
+        const int MaxConcurrency = 5;
+        using var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency);
 
-        foreach (string _raw in RawScans)
+        var tasks = RawScans.Select(async _raw =>
         {
+            await semaphore.WaitAsync();
             try
             {
-                Task<ScanOutput?> task = _factory.CreateFromCSV(_raw);
-                ParseTasks.Add(task);
+                return await _factory.CreateFromCSV(_raw);
             }
             catch
             {
-                continue;
+                return (ScanOutput?)null;
             }
-        }
-        
-        ScanOutput?[] results = await Task.WhenAll(ParseTasks);
+            finally
+            {
+                semaphore.Release();
+            }
+        }).ToList();
+
+        ScanOutput?[] results = await Task.WhenAll(tasks);
 
         return results.Where(x => x != null)!;
     }
