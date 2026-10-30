@@ -10,7 +10,7 @@
 		<!-- Restore NuGet packages with packages.lock.json file -->
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <!-- Versions -->
-		<ApplicationDisplayVersion>1.0.6</ApplicationDisplayVersion>
+		<ApplicationDisplayVersion>1.0.7</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
